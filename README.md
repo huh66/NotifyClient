@@ -6,7 +6,7 @@ Firebird 3.0 User Defined Routine (UDR) for sending messages over TCP to the cal
 [![Firebird](https://img.shields.io/badge/Firebird-3.0+-blue.svg)](https://firebirdsql.org/)
 [![Platform](https://img.shields.io/badge/Platform-Linux-lightgrey.svg)](https://www.linux.org/)
 
-## Check NotifyPanel for receiving notifications from this client
+#### Check NotifyPanel for receiving notifications from this client
 
 A Windows Forms application that receives and displays notification messages from a Firebird SQL Server.
 
