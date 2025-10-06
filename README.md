@@ -6,6 +6,12 @@ Firebird 3.0 User Defined Routine (UDR) for sending messages over TCP to the cal
 [![Firebird](https://img.shields.io/badge/Firebird-3.0+-blue.svg)](https://firebirdsql.org/)
 [![Platform](https://img.shields.io/badge/Platform-Linux-lightgrey.svg)](https://www.linux.org/)
 
+## Check NotifyPanel for receiving notifications from this client
+
+A Windows Forms application that receives and displays notification messages from a Firebird SQL Server.
+
+https://github.com/huh66/NotifyPanel
+
 ## Overview
 
 This UDR allows sending messages directly to connected clients from Firebird triggers or stored procedures. Messages are transmitted as JSON over TCP (default port 1526).
@@ -26,6 +32,7 @@ This UDR allows sending messages directly to connected clients from Firebird tri
 - g++ compiler with C++11 support
 - Firebird Development Headers (`firebird3.0-dev`)
 - Boost C++ Libraries (`libboost-dev`)
+
 
 ## Installation
 
