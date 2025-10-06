@@ -1,6 +1,6 @@
 # NotifyClient
 
-Firebird 3.0 User Defined Routine (UDR) for sending messages over TCP to the calling client.
+Firebird 3.0 User Defined Routine (UDR) for sending messages over TCP to the calling SQL client or any other IP client.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Firebird](https://img.shields.io/badge/Firebird-3.0+-blue.svg)](https://firebirdsql.org/)
