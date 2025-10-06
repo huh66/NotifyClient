@@ -12,6 +12,12 @@ A Windows Forms application that receives and displays notification messages fro
 
 https://github.com/huh66/NotifyPanel
 
+#### Check NotifySend for sending notifications from Windows Command Line to NotifyPanel
+
+A C# Windows command-line program for sending messages over TCP sockets.
+
+https://github.com/huh66/NotifySend
+
 ## Overview
 
 This UDR allows sending messages directly to connected clients from Firebird triggers or stored procedures. Messages are transmitted as JSON over TCP (default port 1526).
