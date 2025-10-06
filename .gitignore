@@ -1,0 +1,54 @@
+# Build artifacts
+*.so
+*.o
+*.a
+*.la
+
+# Compiled libraries
+libsimple_message_udr.so
+notify_client_udr.so
+simple_message_udr.so
+
+# Object files
+src/*.o
+
+# Test directories
+test_plugins/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Backup files
+*.bak
+*.backup
+
+# Build directories
+build/
+dist/
+
+# Package files
+*.tar.gz
+*.zip
+
+# Database files (if any)
+*.fdb
+*.gdb
+
+# Configuration files with sensitive data
+config.local.*
+*.local
