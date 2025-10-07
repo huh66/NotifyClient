@@ -24,12 +24,42 @@ This UDR allows sending messages directly to connected clients from Firebird tri
 
 ## How it works
 
+### Method 1: Using Triggers (Automatic notifications)
 1. An SQL trigger (e.g. on INSERT/UPDATE/DELETE) is triggered
-2. The trigger calls the UDR procedure `NOTIFY_CLIENT`
-3. The UDR determines the IP address of the calling client
+2. The trigger calls the UDR procedure `NOTIFY_CLIENT` with client IP from `rdb$get_context`
+3. The UDR receives the IP address parameter or uses automatic detection as fallback
 4. A TCP connection to Client-IP:PORT is established (default: 1526)
 5. The message is sent as JSON
 6. The client receives the message and displays it in a MessageBox
+
+### Method 2: Using Stored Procedures (Manual notifications)
+1. A stored procedure or application calls `NOTIFY_CLIENT` directly
+2. The procedure can be called from any SQL context (stored procedures, scripts, applications)
+3. Client IP can be provided as parameter or left empty for automatic detection
+4. A TCP connection to Client-IP:PORT is established (default: 1526)
+5. The message is sent as JSON
+6. The client receives the message and displays it in a MessageBox
+
+**Example of direct procedure call:**
+```sql
+-- Send notification directly from a stored procedure
+CREATE OR ALTER PROCEDURE SEND_NOTIFICATION(
+    p_message VARCHAR(1000),
+    p_client_ip VARCHAR(15) DEFAULT ''
+)
+AS
+BEGIN
+    EXECUTE PROCEDURE NOTIFY_CLIENT(
+        'Manual Notification',
+        'INFO',
+        'Direct Message',
+        999,
+        p_message,
+        p_client_ip,
+        NULL
+    );
+END
+```
 
 ## System Requirements
 
@@ -119,14 +149,22 @@ SET TERM ^ ;
 CREATE TRIGGER MY_TABLE_INSERTED
 AFTER INSERT ON MY_TABLE
 AS
+DECLARE client_ip VARCHAR(15);
 BEGIN
+    -- Get client IP from Firebird context
+    client_ip = rdb$get_context('SYSTEM', 'CLIENT_ADDRESS');
+    
+    -- If client IP is not available, use empty string for automatic detection
+    IF (client_ip IS NULL OR client_ip = '') THEN
+        client_ip = '';
+    
     EXECUTE PROCEDURE NOTIFY_CLIENT(
         'New Record',
         'INFO',
         'Record added',
         NEW.ID,
         'A new record was inserted into MY_TABLE.',
-        '',
+        client_ip,  -- Use detected client IP
         NULL
     );
 END ^
@@ -136,12 +174,69 @@ SET TERM ; ^
 
 Further examples can be found in `example_trigger.sql`.
 
+### Usage in stored procedures
+
+You can also create wrapper procedures for easier notification sending:
+
+```sql
+SET TERM ^ ;
+
+-- Simple notification procedure
+CREATE OR ALTER PROCEDURE SEND_NOTIFICATION(
+    p_header VARCHAR(200),
+    p_message VARCHAR(1000),
+    p_client_ip VARCHAR(15) DEFAULT ''
+)
+AS
+DECLARE client_ip VARCHAR(15);
+BEGIN
+    -- Use provided IP or get from context
+    IF (p_client_ip = '') THEN
+    BEGIN
+        client_ip = rdb$get_context('SYSTEM', 'CLIENT_ADDRESS');
+        IF (client_ip IS NULL OR client_ip = '') THEN
+            client_ip = '';
+    END
+    ELSE
+        client_ip = p_client_ip;
+    
+    EXECUTE PROCEDURE NOTIFY_CLIENT(
+        p_header,
+        'INFO',
+        'System Notification',
+        0,
+        p_message,
+        client_ip,
+        NULL
+    );
+END ^
+
+-- Usage example
+CREATE OR ALTER PROCEDURE PROCESS_ORDER(
+    p_order_id INTEGER,
+    p_status VARCHAR(50)
+)
+AS
+BEGIN
+    -- Update order status
+    UPDATE ORDERS SET STATUS = p_status WHERE ID = p_order_id;
+    
+    -- Send notification to client
+    EXECUTE PROCEDURE SEND_NOTIFICATION(
+        'Order Updated',
+        'Order ' || p_order_id || ' status changed to ' || p_status
+    );
+END ^
+
+SET TERM ; ^
+```
+
 ## Parameters
 
 The `NOTIFY_CLIENT` procedure expects the following parameters:
 
-| Parameter | Typ | Richtung | Beschreibung |
-|-----------|-----|----------|--------------|
+| Parameter | Type | Direction | Description |
+|-----------|------|-----------|-------------|
 | HEADER | VARCHAR(200) | IN | Message header/title |
 | LEVEL | VARCHAR(50) | IN | Level (e.g. INFO/WARN/ERROR) |
 | SUBJECT | VARCHAR(200) | IN | Message subject |
@@ -208,7 +303,7 @@ NotifyClient/
 
 ## Limitations
 
-1. **Client IP Detection**: The current implementation tries to determine the client IP via Firebird monitoring tables. If this fails, localhost is used.
+1. **Client IP Detection**: The recommended approach is to use `rdb$get_context('SYSTEM', 'CLIENT_ADDRESS')` in triggers to get the client IP. The UDR can also use automatic detection as fallback, which defaults to localhost if detection fails.
 
 2. **No Confirmation**: There is no guarantee that the client receives the message. The connection is unidirectional.
 
@@ -221,7 +316,7 @@ NotifyClient/
 ### Remove SQL procedure
 
 ```bash
-isql -user SYSDBA -password <ihr-passwort> <datenbank> -i uninstall.sql
+isql -user SYSDBA -password <your-password> <database> -i uninstall.sql
 ```
 
 ### Remove library
